@@ -1,0 +1,21 @@
+{
+    "folders": [
+      {
+        "path": "."
+      }
+    ],
+    "settings": {
+      "omnisharp.useModernNet": true,
+      "omnisharp.enableEditorConfigSupport": true,
+      "omnisharp.enableMsBuildLoadProjectsOnDemand": true,
+      "omnisharp.projectLoadTimeout": 60,
+      "omnisharp.excludePaths": [],
+      "files.exclude": {
+        "**/bin": true,
+        "**/obj": true
+      },
+      "dotnet.defaultSolution": "artkino.sln",
+      "csharp.format.enable": true
+    }
+  }
+  
