@@ -9,7 +9,7 @@ function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/User')
+    axios.get('/api/User')
       .then(res => dispatch(setUsers(res.data)))
       .catch(err => console.error(err));
   }, [dispatch]);
@@ -20,7 +20,10 @@ function App() {
       <ul>
         {users.map(user => <li key={user.id}>{user.name}</li>)}
       </ul>
+        
+        <div>hello world!!</div>
     </div>
+      
   );
 }
 

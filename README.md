@@ -9,6 +9,14 @@ Minimal template for a fullstack project using modern technologies:
 - ☁️ Ready for Azure Container Apps
 - 🔐 Supports `.env` files and dev/prod separation
 
+
+
+# Dev URLs
+
+- 🔥 Frontend: [http://localhost:3000](http://localhost:3000)
+- 🧪 Swagger: [http://localhost:5000/swagger](http://localhost:5000/swagger)
+- 🛠️ Adminer: [http://localhost:8081](http://localhost:8081)
+
 ## 🚀 Getting Started (Development)
 
 ```bash

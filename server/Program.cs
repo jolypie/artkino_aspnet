@@ -1,6 +1,10 @@
+using System.Text;
+using System.Text.Json.Serialization;
 using server.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using server.Models;
+using server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +28,33 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Auth
+builder.Services.AddScoped<AuthService>();
+
+builder.Services.AddAuthentication("Bearer")
+    .AddJwtBearer("Bearer", options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+        };
+    });
+
+// Services
+builder.Services.AddScoped<UserService>();
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    });
+
+
 builder.Services.AddControllers();
 builder.Services.AddAuthorization();
 
@@ -38,6 +69,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
@@ -46,16 +78,6 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
-
-    if(!db.Users.Any()) 
-    {
-        db.Users.AddRange(
-            new User { Name = "Alice", Age = 25 },
-            new User { Name = "Bob", Age = 30 },
-            new User { Name = "Charlie", Age = 22 }
-        );
-    }
-    db.SaveChanges();
 }
 
 app.Run();

@@ -268,3 +268,12 @@
 /home/bonnie/Documents/github/artkino/server/obj/Debug/net8.0/server.pdb
 /home/bonnie/Documents/github/artkino/server/obj/Debug/net8.0/server.genruntimeconfig.cache
 /home/bonnie/Documents/github/artkino/server/obj/Debug/net8.0/ref/server.dll
+/home/bonnie/Documents/github/artkino/server/bin/Debug/net8.0/Microsoft.AspNetCore.Authentication.JwtBearer.dll
+/home/bonnie/Documents/github/artkino/server/bin/Debug/net8.0/Microsoft.IdentityModel.Abstractions.dll
+/home/bonnie/Documents/github/artkino/server/bin/Debug/net8.0/Microsoft.IdentityModel.JsonWebTokens.dll
+/home/bonnie/Documents/github/artkino/server/bin/Debug/net8.0/Microsoft.IdentityModel.Logging.dll
+/home/bonnie/Documents/github/artkino/server/bin/Debug/net8.0/Microsoft.IdentityModel.Protocols.dll
+/home/bonnie/Documents/github/artkino/server/bin/Debug/net8.0/Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+/home/bonnie/Documents/github/artkino/server/bin/Debug/net8.0/Microsoft.IdentityModel.Tokens.dll
+/home/bonnie/Documents/github/artkino/server/bin/Debug/net8.0/System.IdentityModel.Tokens.Jwt.dll
+/home/bonnie/Documents/github/artkino/server/obj/Debug/net8.0/server.sourcelink.json

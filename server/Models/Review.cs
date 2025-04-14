@@ -3,20 +3,18 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace server.Models;
 
-public class UserFilmRelation
+public class Review
 {
     [Key]
     public int Id { get; set; }
-    [Required]
+
+    [Required] 
     public int UserId { get; set; }
     public User User { get; set; } = null!;
     [Required]
     public int TmdbFilmId { get; set; }
-
-    [Column(TypeName = "varchar(20)")]
-    [EnumDataType(typeof(FilmRelationType))]
-    public FilmRelationType Type { get; set; }
-    [Range(1, 10)]
-    public int? Rating { get; set; }
-    public DateTime? RatedAt { get; set; }
+    [Column(TypeName = "varchar(2000)")]
+    public string UserReview { get; set; } = null!;
+    [Required]
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
