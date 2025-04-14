@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   db:
     image: postgres:15
@@ -44,13 +46,9 @@ services:
       dockerfile: Dockerfile
     ports:
       - "5173:5173"
-    volumes:
-      - ./client:/app
-      - /app/node_modules
     environment:
-      - CHOKIDAR_USEPOLLING=true
+      - API_READ_TOKEN=${API_READ_TOKEN}
+      - API_KEY=${API_KEY}
 
 volumes:
   pgdata:
-
-      

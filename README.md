@@ -17,7 +17,20 @@ Minimal template for a fullstack project using modern technologies:
 - 🧪 Swagger: [http://localhost:5000/swagger](http://localhost:5000/swagger)
 - 🛠️ Adminer: [http://localhost:8081](http://localhost:8081)
 
-## 🚀 Getting Started (Development)
+## Development
 
 ```bash
-docker compose up --build
+docker compose \
+  --env-file .env \
+  --env-file .env.development \
+  up --build
+```
+
+## Production
+
+```bash
+docker compose \
+  --env-file .env \
+  --env-file .env.production \
+  up --build
+```

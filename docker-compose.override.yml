@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: server/Dockerfile.dev
+    volumes:
+      - ./server:/app
+      - /app/bin
+      - /app/obj
+    command: dotnet watch run --urls=http://0.0.0.0:8080
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionString=${CONNECTION_STRING}
+      - Jwt__Key=${JWT_KEY}
+
+  frontend:
+    command: npm run dev
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    environment:
+      - API_READ_TOKEN=${API_READ_TOKEN}
+      - API_KEY=${API_KEY}
