@@ -1,3 +1,5 @@
+using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json.Serialization;
 using server.Data;
@@ -5,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using server.Models;
 using server.Services;
+using server.Services.IServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +18,21 @@ builder.Services.AddSwaggerGen();
 // DB
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration["ConnectionString"]));
+
+// API
+var configuration = builder.Configuration;
+
+builder.Services.AddHttpClient<ITmdbService, TmdbService>(client =>
+{
+    client.BaseAddress = new Uri("https://api.themoviedb.org/3/");
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+    
+    var token = builder.Configuration["API_READ_TOKEN"];
+    // could be null
+    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+});
+
+Console.WriteLine("TOKEN: " + builder.Configuration["API_READ_TOKEN"]);
 
 
 // CORS
