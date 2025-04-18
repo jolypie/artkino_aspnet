@@ -19,8 +19,8 @@ public class TmdbService : ITmdbService
     public async Task<List<FilmDto>> GetPopularFilmsAsync()
     {
         var allPopularFilms = new List<FilmDto>();
-
-        for (var page = 1; page <= 3; page++)
+        var pageNum = 2;
+        for (var page = 1; page <= pageNum; page++)
         {
             var response =
                 await _httpClient.GetAsync(
@@ -28,7 +28,7 @@ public class TmdbService : ITmdbService
             response.EnsureSuccessStatusCode();
             
             using var stream = await response.Content.ReadAsStreamAsync();
-            var data = await JsonSerializer.DeserializeAsync<TmdbPopularResponse>(
+            var data = await JsonSerializer.DeserializeAsync<TmdbRawFilmResponse>(
                 stream,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             
@@ -37,6 +37,7 @@ public class TmdbService : ITmdbService
             allPopularFilms.AddRange(
                 data.Results.Select(raw => new FilmDto
                 {
+                    TmdbId = raw.TmdbId,
                     Title = raw.Title,
                     Description = raw.Overview,
                     PosterPath  = raw.PosterPath,
@@ -46,5 +47,13 @@ public class TmdbService : ITmdbService
         }
         
         return allPopularFilms;
+    }
+
+    public async Task<FilmDto> GetFilmDetailsAsync(int id)
+    {
+        var film = new FilmDto();
+        var response = await _httpClient.GetAsync($"movie/{id}?language=en-US");
+        response.EnsureSuccessStatusCode();
+        
     }
 }

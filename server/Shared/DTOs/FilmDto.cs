@@ -6,6 +6,8 @@ namespace server.Shared.DTOs;
 public class FilmDto
 {
     [Required]
+    public int TmdbId { get; set; }
+    [Required]
     [MaxLength(255)]
     public string Title { get; set; } = string.Empty;
 

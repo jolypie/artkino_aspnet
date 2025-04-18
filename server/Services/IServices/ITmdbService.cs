@@ -5,5 +5,5 @@ namespace server.Services.IServices;
 public interface ITmdbService
 {
     Task<List<FilmDto>> GetPopularFilmsAsync();
-    
+    Task<FilmDto> GetFilmDetailsAsync(int id);
 }
