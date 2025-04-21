@@ -1,12 +1,12 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using System.IdentityModel.Tokens.Jwt;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Security.Claims;
-using server.Models;
 using server.Data;
-
-namespace server.Services;
+using server.Models;
+using server.Shared.DTOs;
 
 public class AuthService
 {
@@ -19,22 +19,61 @@ public class AuthService
         _db = db;
     }
 
-    public void CreatePasswordHash(string password, out byte[] hash, out byte[] salt)
+    public async Task RegisterAsync(UserRegisterDto dto)
+    {
+        if (await _db.Users.AnyAsync(u => u.Username == dto.Username))
+            throw new Exception("User already exists");
+
+        CreatePasswordHash(dto.Password, out var hash, out var salt);
+
+        var user = new User
+        {
+            Username = dto.Username,
+            PasswordHash = hash,
+            PasswordSalt = salt
+        };
+
+        await _db.Users.AddAsync(user);
+        await _db.SaveChangesAsync();
+
+        // Create default playlists
+        var playlists = new List<Playlist>
+        {
+            new() { Name = "Favorites", UserId = user.Id, IsSystem = true },
+            new() { Name = "Watch Later", UserId = user.Id, IsSystem = true },
+            new() { Name = "Watched", UserId = user.Id, IsSystem = true }
+        };
+
+        await _db.Playlists.AddRangeAsync(playlists);
+        await _db.SaveChangesAsync();
+    }
+
+    public async Task<string> LoginAsync(UserLoginDto dto)
+    {
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Username == dto.Username);
+        if (user == null) throw new Exception("User not found");
+
+        if (!VerifyPassword(dto.Password, user.PasswordHash, user.PasswordSalt))
+            throw new Exception("Wrong password");
+
+        return CreateToken(user);
+    }
+
+    private void CreatePasswordHash(string password, out byte[] hash, out byte[] salt)
     {
         using var hmac = new HMACSHA512();
         salt = hmac.Key;
         hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
     }
 
-    public bool VerifyPassword(string password, byte[] hash, byte[] salt)
+    private bool VerifyPassword(string password, byte[] hash, byte[] salt)
     {
         using var hmac = new HMACSHA512(salt);
         var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
         return computedHash.SequenceEqual(hash);
     }
 
-
-    public string CreateToken(User user)
+    private string CreateToken(User user)
     {
         var claims = new[]
         {

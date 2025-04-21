@@ -29,7 +29,7 @@ public class FilmDto
     [MaxLength(255)]
     public string Director { get; set; } = string.Empty;
 
-    [MaxLength(500)]
+    [MaxLength(1000)]
     public string Cast { get; set; } = string.Empty;
 
     [MaxLength(2000)]

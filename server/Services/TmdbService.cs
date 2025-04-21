@@ -28,7 +28,7 @@ public class TmdbService : ITmdbService
             response.EnsureSuccessStatusCode();
             
             using var stream = await response.Content.ReadAsStreamAsync();
-            var data = await JsonSerializer.DeserializeAsync<TmdbRawFilmResponse>(
+            var data = await JsonSerializer.DeserializeAsync<TmdbPopularFilmsResponse>(
                 stream,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             
@@ -52,8 +52,36 @@ public class TmdbService : ITmdbService
     public async Task<FilmDto> GetFilmDetailsAsync(int id)
     {
         var film = new FilmDto();
-        var response = await _httpClient.GetAsync($"movie/{id}?language=en-US");
+        var response = await _httpClient.GetAsync($"movie/{id}?language=en-US&append_to_response=credits");
         response.EnsureSuccessStatusCode();
         
+        using var stream = await response.Content.ReadAsStreamAsync();
+        var data = await JsonSerializer.DeserializeAsync<TmdbFilmDetailsRaw>(stream,
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        
+        if (data is null) 
+            throw new Exception("Failed to get film details");
+        
+        var director = data.Credits?.Crew?.FirstOrDefault(c => c.Job == "Director")?.Name ?? ""; ;
+        var cast = data.Credits?.Cast != null
+            ? string.Join(", ", data.Credits.Cast.Take(5).Select(c => c.Name))
+            : "";
+        
+        var genres = string.Join(", ", data.Genres.Select(g => g.Name));
+        var countries = string.Join(", ", data.Countries.Select(c => c.Name));
+
+        return new FilmDto
+        {
+            TmdbId = data.TmdbId,
+            Title = data.Title,
+            Description = data.Overview,
+            PosterPath = data.PosterPath,
+            VoteAverage = data.VoteAverage,
+            ReleaseDate = DateTime.TryParse(data.ReleaseDate, out var d) ? d : default,
+            Director = director,
+            Cast = cast,
+            Genres = genres,
+            Countries = countries
+        };
     }
-}
+}   

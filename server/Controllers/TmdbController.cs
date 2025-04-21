@@ -20,4 +20,13 @@ public class TmdbController : ControllerBase
         var films = await _tmdb.GetPopularFilmsAsync();
         return Ok(films);
     }
+
+    [HttpGet("movie_details/{id}")]
+    public async Task<IActionResult> GetMovieDetails(int id)
+    {
+        var film = await _tmdb.GetFilmDetailsAsync(id);
+        return Ok(film);
+    }
+    
+    
 }

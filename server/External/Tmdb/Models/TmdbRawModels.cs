@@ -3,7 +3,7 @@ using server.Shared.DTOs;
 
 namespace server.External.Tmdb.Models;
 
-public class TmdbRawFilmResponse
+public class TmdbPopularFilmsResponse
 {
     [JsonPropertyName("results")]
     public List<TmdbPopularFilmRaw> Results { get; set; } = new();

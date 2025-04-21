@@ -1,57 +1,42 @@
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
-using server.Data;
-using server.Models;
-using server.Services;
 using server.Shared.DTOs;
-
-namespace server.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
     private readonly AuthService _auth;
-    private readonly AppDbContext _db;
 
-    public AuthController(AuthService auth, AppDbContext db)
+    public AuthController(AuthService auth)
     {
         _auth = auth;
-        _db = db;
     }
 
     [HttpPost("register")]
-    public IActionResult Register([FromBody] UserRegisterDto registerDto)
+    public async Task<IActionResult> Register(UserRegisterDto dto)
     {
-        if(_db.Users.Any(u => u.Username == registerDto.Username))
-            return BadRequest("User already exists");
-        
-        _auth.CreatePasswordHash(registerDto.Password, out var hash, out var salt);
-        
-        var user = new User
+        try
         {
-            Username = registerDto.Username,
-            PasswordHash = hash,
-            PasswordSalt = salt
-        };
-
-        _db.Users.Add(user);
-        _db.SaveChanges();
-
-        return Ok("Registered");
+            await _auth.RegisterAsync(dto);
+            return Ok("Registered");
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
-    
-    
+
     [HttpPost("login")]
-    public IActionResult Login(UserLoginDto dto)
+    public async Task<IActionResult> Login(UserLoginDto dto)
     {
-        var user = _db.Users.FirstOrDefault(u => u.Username == dto.Username);
-        if (user == null) return Unauthorized("User not found");
-
-        if (!_auth.VerifyPassword(dto.Password, user.PasswordHash, user.PasswordSalt))
-            return Unauthorized("Wrong password");
-
-        var token = _auth.CreateToken(user);
-        return Ok(new { token });
+        try
+        {
+            var token = await _auth.LoginAsync(dto);
+            return Ok(new { token });
+        }
+        catch (Exception ex)
+        {
+            return Unauthorized(ex.Message);
+        }
     }
 }

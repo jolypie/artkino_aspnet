@@ -9,14 +9,13 @@ public class AppDbContext : DbContext
 
     public DbSet<User> Users => Set<User>();
     public DbSet<Review> Reviews => Set<Review>();
-    public DbSet<UserFilmRelation> UserFilmRelations => Set<UserFilmRelation>();
+    public DbSet<Playlist> Playlists => Set<Playlist>();
+    public DbSet<PlaylistItem> PlaylistItems => Set<PlaylistItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
-        modelBuilder.Entity<UserFilmRelation>()
-            .Property(e => e.Type)
-            .HasConversion<string>();
+        
+        
     }
 }
