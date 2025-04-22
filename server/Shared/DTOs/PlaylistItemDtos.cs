@@ -4,8 +4,8 @@ namespace server.Shared.DTOs;
 
 public record CreatePlaylistItemDto
 (
-    [property: Required] int PlaylistId,
-    [property: Required] int TmdbFilmId
+    [Required] int PlaylistId,
+    [Required] int TmdbFilmId
 );
 
 public record PlaylistItemResponseDto

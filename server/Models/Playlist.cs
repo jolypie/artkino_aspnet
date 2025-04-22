@@ -15,9 +15,9 @@ public class Playlist
     [MaxLength(100)]
     [MinLength(1)] 
     public string Name { get; set; } = string.Empty;
+        
     
-    
-    [Url, MaxLength(255)]
+    [Url]
     public string? CoverUrl { get; set; } // for user-created playlists
     
     public bool IsSystem { get; set; } = false; // by default (isSystem = true), every user has 3 playlist - favorites, watch later, watched

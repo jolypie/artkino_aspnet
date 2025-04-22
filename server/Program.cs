@@ -6,6 +6,8 @@ using server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using server.Models;
+using server.Repositories;
+using server.Repositories.IRepositories;
 using server.Services;
 using server.Services.IServices;
 
@@ -33,6 +35,14 @@ builder.Services.AddHttpClient<ITmdbService, TmdbService>(client =>
 });
 
 Console.WriteLine("TOKEN: " + builder.Configuration["API_READ_TOKEN"]);
+
+builder.Services.AddScoped<UserService>();
+
+builder.Services.AddScoped<IPlaylistService, PlaylistService>();
+builder.Services.AddScoped<IPlaylistRepo, PlaylistRepo>();
+
+builder.Services.AddScoped<IPlaylistItemService, PlaylistItemService>();
+builder.Services.AddScoped<IPlaylistItemRepo, PlaylistItemRepo>();
 
 
 // CORS
@@ -62,9 +72,6 @@ builder.Services.AddAuthentication("Bearer")
                 Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
         };
     });
-
-// Services
-builder.Services.AddScoped<UserService>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>

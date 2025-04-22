@@ -4,5 +4,5 @@ namespace server.Shared.DTOs;
 
 public record UserDetailsResponseDto
 (
-    [property: Required] string Username
+    [Required] string Username
 );
