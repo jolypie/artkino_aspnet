@@ -76,6 +76,10 @@ builder.Services.AddScoped<IReviewRepo, ReviewRepo>();
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<AuthService>(); 
 
+builder.Services.AddScoped<IUserRepo, UserRepo>();
+builder.Services.AddScoped<UserService>();
+
+
 // CORS
 builder.Services.AddCors(options =>
 {
