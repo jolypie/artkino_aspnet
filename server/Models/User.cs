@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using server.Shared.Enums;
 
 namespace server.Models;
 
@@ -17,4 +18,9 @@ public class User
 
     [Required]
     public byte[] PasswordSalt { get; set; } = null!;
+    
+    [Required]
+    public Role Role { get; set; } = Role.User;
+
+    public List<RefreshToken> RefreshTokens { get; set; } = new();
 }

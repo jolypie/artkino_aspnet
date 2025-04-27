@@ -2,3 +2,5 @@
 .env.development
 .env.production
 todo.txt
+
+migrate.sh

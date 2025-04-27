@@ -5,21 +5,47 @@ using System.Text.Json.Serialization;
 using server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using server.Models;
 using server.Repositories;
 using server.Repositories.IRepositories;
 using server.Services;
 using server.Services.IServices;
 
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Configuration.AddEnvironmentVariables();
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "API", Version = "v1" });
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header
+    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement {
+        {
+            new OpenApiSecurityScheme{
+                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+            },
+            new string[]{}
+        }
+    });
+});
 
 // DB
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration["ConnectionString"]));
+var connString = builder.Configuration["CONNECTION_STRING"]
+                 ?? builder.Configuration["CONNECTION_STRING"]  
+                 ?? throw new("CONNECTION_STRING env var missing");
+
+builder.Services.AddDbContext<AppDbContext>(opt => opt.UseNpgsql(connString));
 
 // API
 var configuration = builder.Configuration;
@@ -30,11 +56,11 @@ builder.Services.AddHttpClient<ITmdbService, TmdbService>(client =>
     client.DefaultRequestHeaders.Add("Accept", "application/json");
     
     var token = builder.Configuration["API_READ_TOKEN"];
-    // could be null
-    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+    if (token is not null)
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 });
 
-Console.WriteLine("TOKEN: " + builder.Configuration["API_READ_TOKEN"]);
+// Console.WriteLine("TOKEN: " + builder.Configuration["API_READ_TOKEN"]);
 
 builder.Services.AddScoped<UserService>();
 
@@ -44,6 +70,11 @@ builder.Services.AddScoped<IPlaylistRepo, PlaylistRepo>();
 builder.Services.AddScoped<IPlaylistItemService, PlaylistItemService>();
 builder.Services.AddScoped<IPlaylistItemRepo, PlaylistItemRepo>();
 
+builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IReviewRepo, ReviewRepo>();
+
+builder.Services.AddScoped<TokenService>();
+builder.Services.AddScoped<AuthService>(); 
 
 // CORS
 builder.Services.AddCors(options =>
@@ -52,36 +83,34 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins("http://localhost:3000")
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
 // Auth
-builder.Services.AddScoped<AuthService>();
+var jwtKey = builder.Configuration["JWT_KEY"]
+             ?? builder.Configuration["Jwt:Key"]
+             ?? throw new("JWT_KEY env var missing");
+var keyBytes = Encoding.UTF8.GetBytes(jwtKey);
 
-builder.Services.AddAuthentication("Bearer")
-    .AddJwtBearer("Bearer", options =>
+builder.Services.AddAuthentication("Bearer").AddJwtBearer("Bearer", o =>
+{
+    o.TokenValidationParameters = new TokenValidationParameters
     {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = false,
-            ValidateAudience = false,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
-        };
-    });
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(keyBytes)
+    };
+});
+
+builder.Services.AddAuthorization();
 
 builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-    });
+    .AddJsonOptions(o => o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
-
-builder.Services.AddControllers();
-builder.Services.AddAuthorization();
 
 var app = builder.Build();
 

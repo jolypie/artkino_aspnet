@@ -1,22 +1,18 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using server.Data;
 using server.Models;
+using server.Services;
 using server.Shared.DTOs;
 
 public class AuthService
 {
-    private readonly IConfiguration _config;
     private readonly AppDbContext _db;
+    private readonly TokenService _tokenService;
 
-    public AuthService(IConfiguration config, AppDbContext db)
+    public AuthService(AppDbContext db, TokenService tokenService)
     {
-        _config = config;
         _db = db;
+        _tokenService = tokenService;
     }
 
     public async Task RegisterAsync(UserRegisterDto dto)
@@ -28,67 +24,79 @@ public class AuthService
 
         var user = new User
         {
-            Username = dto.Username,
+            Username     = dto.Username,
             PasswordHash = hash,
-            PasswordSalt = salt
+            PasswordSalt = salt,
+            Role = dto.Role
         };
-
         await _db.Users.AddAsync(user);
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(); 
 
-        // Create default playlists
         var playlists = new List<Playlist>
         {
-            new() { Name = "Favorites", UserId = user.Id, IsSystem = true },
+            new() { Name = "Favorites",   UserId = user.Id, IsSystem = true },
             new() { Name = "Watch Later", UserId = user.Id, IsSystem = true },
-            new() { Name = "Watched", UserId = user.Id, IsSystem = true }
+            new() { Name = "Watched",     UserId = user.Id, IsSystem = true }
         };
-
         await _db.Playlists.AddRangeAsync(playlists);
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(); 
     }
 
-    public async Task<string> LoginAsync(UserLoginDto dto)
+    public async Task<(AuthResponseDto auth, string refreshToken)> LoginAsync(UserLoginDto dto)
     {
-        var user = await _db.Users.FirstOrDefaultAsync(u => u.Username == dto.Username);
+        var user = await _db.Users.Include(u => u.RefreshTokens).FirstOrDefaultAsync(u => u.Username == dto.Username);
         if (user == null) throw new Exception("User not found");
 
         if (!VerifyPassword(dto.Password, user.PasswordHash, user.PasswordSalt))
             throw new Exception("Wrong password");
 
-        return CreateToken(user);
+        var accessToken = _tokenService.GenerateAccessToken(user);
+        var refreshToken = _tokenService.GenerateRefreshToken();
+        var hashedRefresh = _tokenService.ComputeHash(refreshToken);
+
+        user.RefreshTokens.Add(new RefreshToken
+        {
+            TokenHash = hashedRefresh,
+            Expires = DateTime.UtcNow.AddDays(7),
+            User = user
+        });
+        await _db.SaveChangesAsync();
+
+        var authDto = new AuthResponseDto(accessToken, new UserDetailsResponseDto(user.Username, user.Role));
+        return (authDto, refreshToken);
+    }
+
+    public async Task<string> RefreshAsync(string refreshToken)
+    {
+        var hash = _tokenService.ComputeHash(refreshToken);
+        var tokenEntity = await _db.RefreshTokens.Include(t => t.User).FirstOrDefaultAsync(t => t.TokenHash == hash && !t.Revoked);
+        if (tokenEntity == null || tokenEntity.Expires < DateTime.UtcNow)
+            throw new Exception("Invalid refresh token");
+
+        var newAccess = _tokenService.GenerateAccessToken(tokenEntity.User);
+        return newAccess;
+    }
+
+    public async Task LogoutAsync(int userId, string refreshToken)
+    {
+        var hash = _tokenService.ComputeHash(refreshToken);
+        var token = await _db.RefreshTokens.FirstOrDefaultAsync(t => t.TokenHash == hash && t.UserId == userId && !t.Revoked);
+        if (token == null) return;
+        token.Revoked = true;
+        await _db.SaveChangesAsync();
     }
 
     private void CreatePasswordHash(string password, out byte[] hash, out byte[] salt)
     {
-        using var hmac = new HMACSHA512();
+        using var hmac = new System.Security.Cryptography.HMACSHA512();
         salt = hmac.Key;
-        hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+        hash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
     }
 
     private bool VerifyPassword(string password, byte[] hash, byte[] salt)
     {
-        using var hmac = new HMACSHA512(salt);
-        var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+        using var hmac = new System.Security.Cryptography.HMACSHA512(salt);
+        var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
         return computedHash.SequenceEqual(hash);
-    }
-
-    private string CreateToken(User user)
-    {
-        var claims = new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Name, user.Username)
-        };
-
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512);
-
-        var token = new JwtSecurityToken(
-            claims: claims,
-            expires: DateTime.UtcNow.AddDays(7),
-            signingCredentials: creds);
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }

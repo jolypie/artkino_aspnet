@@ -38,9 +38,9 @@ services:
     environment:
       - API_READ_TOKEN=${API_READ_TOKEN}
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
-      - ConnectionString=${CONNECTION_STRING}
-      - Jwt__Key=${JWT_KEY}
-
+      - CONNECTION_STRING=${CONNECTION_STRING}
+      - JWT_KEY=${JWT_KEY}
+  
   frontend:
     build:
       context: ./client
