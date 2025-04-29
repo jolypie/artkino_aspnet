@@ -84,4 +84,11 @@ public class TmdbService : ITmdbService
             Countries = countries
         };
     }
+
+    public async Task<List<GenreDto>> GetGenresAsync()
+    {
+        var response = await _httpClient.GetFromJsonAsync<GenreResponse>("genre/movie/list?language=en-US");
+        return response?.Genres.Select(g => new GenreDto(g.Id, g.Name)).ToList() ?? new List<GenreDto>();
+    }
+
 }   

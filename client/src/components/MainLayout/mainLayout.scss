@@ -1,0 +1,19 @@
+.main-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: #121212;
+  
+    &__body {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      flex: 1;
+      height: calc(100vh - 5rem); 
+    }
+  
+    &__content {
+      padding: 2rem;
+      overflow-y: auto;
+    }
+  }
+  

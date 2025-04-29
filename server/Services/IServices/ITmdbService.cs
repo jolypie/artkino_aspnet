@@ -6,4 +6,5 @@ public interface ITmdbService
 {
     Task<List<FilmDto>> GetPopularFilmsAsync();
     Task<FilmDto> GetFilmDetailsAsync(int id);
+    Task<List<GenreDto>> GetGenresAsync();
 }

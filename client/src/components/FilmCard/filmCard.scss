@@ -1,0 +1,62 @@
+.film-card {
+    margin: 1.5rem;
+    width: 200px;
+    color: #fff;
+    font-family: sans-serif;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #1a1a1a;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, .4);
+    transition: transform .25s ease;
+  
+    &__link {
+      text-decoration: none;
+      color: inherit;
+    }
+  
+    &__poster-wrapper {
+      position: relative;
+      height: 280px;
+  
+      &:hover .film-card__poster { opacity: .6; }
+      &:hover .film-card__play   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    }
+  
+    &__poster {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: opacity .25s ease;
+    }
+  
+    &__play {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) scale(.9);
+      opacity: 0;
+      transition: opacity .25s ease, transform .25s ease;
+      pointer-events: none;
+    }
+  
+    &__info   { padding: .75rem .75rem 1rem; display: flex; flex-direction: column; gap: .5rem; }
+    &__header { flex: 1 1 auto; }
+  
+    &__title   { font-size: 1rem; font-weight: 600; margin: 0; }
+    &__genres  { font-size: .8rem; color: #adadad; margin: .25rem 0 0; }
+  
+    &__meta   { display: flex; align-items: center; gap: .4rem; font-size: .9rem; }
+  
+    &__rating { color: orange; }
+    &__year   { margin-left: .6rem; }
+  
+    // ---------  responsive  ----------
+    @media (max-width: 600px) {
+      width: 100%;
+      &__poster-wrapper { height: auto; }
+      &__poster        { aspect-ratio: 2/3; }
+      &__title         { font-size: .95rem; }
+      &__genres        { font-size: .75rem; }
+    }
+  }
+  

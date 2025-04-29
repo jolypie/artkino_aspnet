@@ -28,5 +28,11 @@ public class TmdbController : ControllerBase
         return Ok(film);
     }
     
-    
+    [HttpGet("genres")]
+    public async Task<IActionResult> GetGenres()
+    {
+        var genres = await _tmdb.GetGenresAsync();
+        return Ok(new { genres });
+    }
+
 }
