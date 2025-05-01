@@ -5,7 +5,11 @@ import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import { deepPurple } from '@mui/material/colors';
 import './navbar.scss';
 
-const Navbar: React.FC = () => {
+interface NavbarProps {
+  className?: string;
+}
+
+const Navbar: React.FC<NavbarProps> = ({ className }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [username, setUsername] = useState('');

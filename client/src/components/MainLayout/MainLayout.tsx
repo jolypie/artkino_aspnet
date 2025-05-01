@@ -12,7 +12,7 @@ interface MainLayoutProps {
 const MainLayout: React.FC<MainLayoutProps> = ({ films }) => {
   return (
     <div className="main-layout">
-      <Navbar />
+      <Navbar className="main-layout__header" />
       <div className="main-layout__body">
         <Sidebar />
         <div className="main-layout__content">

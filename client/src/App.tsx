@@ -6,6 +6,7 @@ import FilmGrid from './components/FilmGrid/FilmGrid';
 import { useEffect, useState } from 'react';
 import api from './api/axiosInstance';
 import { Film } from './types/Film';
+import './App.scss';
 
 function App() {
 

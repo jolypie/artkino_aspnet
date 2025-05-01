@@ -1,26 +1,21 @@
 .film-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 2rem;
-    padding: 2rem;
-    background-color: #1a1a1a;
-    border-radius: 20px;
-    margin: 2rem;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 2rem;
+  margin: 2rem 2rem 0 2rem;
+  padding: 0;
   
-    @media (max-width: 1200px) {
-      gap: 1.5rem;
-    }
-  
-    @media (max-width: 900px) {
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 1rem;
-    }
-  
-    @media (max-width: 600px) {
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      padding: 1rem;
-      margin: 1rem;
-    }
+  @media (max-width: 1200px) {
+    gap: 1.5rem;
   }
-  
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    margin: 1rem;
+  }
+}
