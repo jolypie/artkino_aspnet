@@ -1,0 +1,28 @@
+.info {
+    margin: 2rem 0;
+    display: grid;
+    gap: 2rem;
+  
+    &__overview {
+      background: #222; padding: 1rem 1.4rem; border-radius: 10px;
+      line-height: 1.45;
+    }
+  
+    &__grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill,minmax(260px,1fr));
+      gap: 1rem;
+    }
+  
+    &__field {
+      background: #181818; border-radius: 8px; padding: .9rem 1rem;
+      display: flex; flex-direction: column; gap: .3rem;
+  
+      &--full { grid-column: 1/-1; }
+  
+      span:last-child { color:#ccc; }
+    }
+  
+    &__label { font-size:.75rem; text-transform:uppercase; color:#777; }
+  }
+  

@@ -85,4 +85,15 @@ $orange: #FF4E00;
       font-size: 1rem;
     }
   }
+
+
+    @media (max-width:768px){
+    position:fixed;
+    top:5rem; left:0;
+    height:calc(100vh - 5rem);
+    transform:translateX(-100%);
+    z-index:50;
+    box-shadow:4px 0 8px rgba(0,0,0,.4);
+    &--open{ transform:translateX(0); }
+  }
 }

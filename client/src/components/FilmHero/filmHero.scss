@@ -1,0 +1,36 @@
+$orange: #FF4E00;
+
+.hero {
+  position: relative;
+  height: 26rem;
+  background-size: cover;
+  background-position: center;
+
+  &__overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,.65);
+    backdrop-filter: blur(3px);
+  }
+
+  &__inner {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 0 1rem;
+  }
+
+  &__title  { font-size: 3rem; font-weight: 700; margin: 0 0 1rem; }
+  &__rating {
+    display: flex; align-items: center; gap: .4rem;
+    font-size: 1.4rem;
+
+    svg { color: $orange; }
+  }
+  &__year   { margin-left: .6rem; font-size: 1.2rem; color: #ccc; }
+}

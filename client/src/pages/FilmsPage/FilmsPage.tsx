@@ -1,39 +1,46 @@
-import { useParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { skipToken } from '@reduxjs/toolkit/query';
+import { useParams, useSearchParams } from 'react-router-dom';
 import MainLayout from '../../components/MainLayout/MainLayout';
-import api from '../../api/axiosInstance';
+import {
+  useListCategoryQuery,
+  useListGenreQuery
+} from '../../api/tmdbApi';
 import { Film } from '../../types/Film';
 
-const FilmsPage: React.FC = () => {
-  const { category } = useParams<{ category: string }>();
-  const [films, setFilms] = useState<Film[]>([]);
-  const [loading, setLoading] = useState(true);
+type PageType = 'popular' | 'trending' | 'top250' | 'genre';
 
-  useEffect(() => {
-    const fetchFilms = async () => {
-      try {
-        let endpoint = '';
+interface FilmsPageProps {
+  type: PageType;
+}
 
-        if (category === 'popular') {
-          endpoint = '/Tmdb/popular';
-        } else {
-          console.error('Unknown category:', category);
-          return;
-        }
+const FilmsPage: React.FC<FilmsPageProps> = ({ type }) => {
+  const { genreId } = useParams<{ genreId: string }>();
+  const [search]    = useSearchParams();
+  const page        = Number(search.get('page') ?? 1);
 
-        const response = await api.get<Film[]>(endpoint);
-        setFilms(response.data);
-      } catch (error) {
-        console.error('Error fetching films:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const {
+    data: categoryFilms = [],
+    isLoading: categoryLoading
+  } = useListCategoryQuery(
+        type === 'genre'
+          ? skipToken
+          : { type, page }
+      );
 
-    fetchFilms();
-  }, [category]);
+  const {
+    data: genreFilms = [],
+    isLoading: genreLoading
+  } = useListGenreQuery(
+        type !== 'genre' || !genreId
+          ? skipToken
+          : { genreId: Number(genreId), page }
+      );
 
-  if (loading) return <div>Loading...</div>;
+  const films      : Film[] = type === 'genre' ? genreFilms    : categoryFilms;
+  const isLoading  : boolean = type === 'genre' ? genreLoading : categoryLoading;
+
+  if (isLoading)          return <p style={{ padding:'5rem' }}>Loading…</p>;
+  if (films.length === 0) return <p style={{ padding:'5rem' }}>No films found.</p>;
 
   return <MainLayout films={films} />;
 };

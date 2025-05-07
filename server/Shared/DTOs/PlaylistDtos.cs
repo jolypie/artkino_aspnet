@@ -21,3 +21,4 @@ public record PlaylistResponseDto
     string? CoverUrl,
     bool IsSystem
 );
+
