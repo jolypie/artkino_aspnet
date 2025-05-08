@@ -31,4 +31,16 @@ public class TmdbController : ControllerBase
 
     [HttpGet("genres")]                 public async Task<IActionResult> Genres() =>
         Ok(new { genres = await _tmdb.GetGenresAsync() });
+    
+    
+    [HttpGet("search")]
+    public async Task<IActionResult> Search([FromQuery] string query, [FromQuery] int page = 1)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+            return BadRequest("query is required");
+
+        var films = await _tmdb.SearchFilmsAsync(query, page);
+        return Ok(films);
+    }
+
 }

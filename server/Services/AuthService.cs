@@ -18,7 +18,7 @@ public class AuthService
     public async Task RegisterAsync(UserRegisterDto dto)
     {
         if (await _db.Users.AnyAsync(u => u.Username == dto.Username))
-            throw new Exception("User already exists");
+            throw new InvalidOperationException("User already exists");
 
         CreatePasswordHash(dto.Password, out var hash, out var salt);
 

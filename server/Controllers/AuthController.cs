@@ -21,9 +21,17 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register(UserRegisterDto dto)
     {
-        await _authService.RegisterAsync(dto);
-        return Ok();
+        try
+        {
+            await _authService.RegisterAsync(dto);
+            return Ok();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
     }
+
 
     [HttpPost("login")]
     public async Task<IActionResult> Login(UserLoginDto dto)

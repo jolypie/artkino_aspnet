@@ -1,0 +1,39 @@
+$orange:#FF4E00;
+
+.auth{
+  max-width:400px;
+  margin:6rem auto;
+  display:flex;
+  flex-direction:column;
+  gap:1.2rem;
+  background:#181818;
+  padding:2.5rem;
+  border-radius:12px;
+  box-shadow:0 4px 14px rgba(0,0,0,.6);
+
+  h1{margin:0 0 .5rem;font-size:2rem;text-align:center;color:$orange}
+
+  input{
+    padding:.8rem 1rem;
+    border:none;
+    border-radius:8px;
+    background:#222;
+    color:#fff;
+    font-size:1rem;
+  }
+
+  button{
+    padding:.9rem;
+    border:none;
+    border-radius:8px;
+    background:$orange;
+    font-size:1rem;
+    font-weight:600;
+    color:#fff;
+  }
+
+  &__error{color:#f55;text-align:center}
+  &__switch{font-size:.9rem;text-align:center;
+    a{color:$orange;}
+  }
+}

@@ -1,47 +1,37 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Avatar } from '@mui/material';
-import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import MenuIcon from '@mui/icons-material/Menu';
+import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import { deepPurple } from '@mui/material/colors';
+import { useAuth } from '../../context/AuthContext';
 import './navbar.scss';
 
-interface NavbarProps {
-  onBurgerClick?: () => void;
-}
+interface Props { onBurgerClick?: () => void }
 
-const Navbar: React.FC<NavbarProps> = ({ onBurgerClick }) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [username, setUsername] = useState('');
-  const navigate = useNavigate();
-  const isUserLoggedIn = !!localStorage.getItem('token');
+const Navbar: React.FC<Props> = ({ onBurgerClick }) => {
+  const { user, logout }   = useAuth();
+  const nav                = useNavigate();
+  const [q, setQ]          = useState('');
+  const [menuOpen, setOpen]= useState(false);
 
-  useEffect(() => {
-    setUsername(localStorage.getItem('username') || 'Guest');
-  }, []);
+  const doSearch = () => { if (q.trim()) nav(`/search?query=${q.trim()}`); };
 
-  const handleSearch = () => {
-    if (searchQuery.trim()) {
-      navigate(`/search?query=${searchQuery.trim()}`);
-      setSearchQuery('');
-    }
-  };
-  const handleKey = (e: React.KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && handleSearch();
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('username');
-    navigate('/login');
-    window.location.reload();
-  };
+    useEffect(() => {
+    const close = () => setOpen(false);
+    document.addEventListener('click', close);
+    return () => document.removeEventListener('click', close);
+    }, []);
 
-  const firstLetter = username.charAt(0).toUpperCase();
+  const stop = (e: React.MouseEvent) => e.stopPropagation();
+
+
+  const username  = user?.username || localStorage.getItem('username') || '';
+  const avatarCh  = username ? username[0].toUpperCase() : '?';
 
   return (
-    <header className="navbar">
-      <button className="navbar__burger" onClick={onBurgerClick}>
-        <MenuIcon />
-      </button>
+    <header className="navbar" onClick={stop}>
+      <button className="navbar__burger" onClick={onBurgerClick}><MenuIcon/></button>
 
       <Link to="/" className="navbar__logo">ARTKINO</Link>
 
@@ -49,29 +39,27 @@ const Navbar: React.FC<NavbarProps> = ({ onBurgerClick }) => {
         <input
           className="navbar__search-input"
           placeholder="Search…"
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-          onKeyDown={handleKey}
+          value={q}
+          onChange={e => setQ(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && doSearch()}
         />
-        <SearchOutlinedIcon className="navbar__search-icon" onClick={handleSearch} />
+        <SearchOutlinedIcon className="navbar__search-icon" onClick={doSearch}/>
       </div>
 
-      {isUserLoggedIn ? (
-        <div
-          className="navbar__user"
-          onMouseEnter={() => setIsMenuOpen(true)}
-          onMouseLeave={() => setIsMenuOpen(false)}
-        >
-          <span className="navbar__username">{username}</span>
-          <Avatar sx={{ bgcolor: deepPurple[500] }} className="navbar__avatar">{firstLetter}</Avatar>
+      {user ? (
+        <div className="navbar__user">
+          <button className="navbar__user-btn" onClick={()=>setOpen(o=>!o)}>
+            <span className="navbar__username">{username}</span>
+            <Avatar sx={{ bgcolor: deepPurple[500] }} className="navbar__avatar">
+              {avatarCh}
+            </Avatar>
+          </button>
 
-          {isMenuOpen && (
-            <div className="navbar__menu">
-              <Link to="/profile"   className="navbar__menu-item">My Profile</Link>
-              <Link to="/settings"  className="navbar__menu-item">Settings</Link>
-              <button onClick={handleLogout} className="navbar__menu-item">Log Out</button>
-            </div>
-          )}
+          <nav className={`navbar__menu ${menuOpen ? 'navbar__menu--open' : ''}`} onClick={stop}>
+            <Link   to="/profile"  className="navbar__menu-item">My Profile</Link>
+            <Link   to="/settings" className="navbar__menu-item">Settings</Link>
+            <button onClick={logout} className="navbar__menu-item">Log Out</button>
+          </nav>
         </div>
       ) : (
         <Link to="/login" className="navbar__signin">SIGN IN</Link>

@@ -5,7 +5,7 @@ namespace server.External.Tmdb.Models;
 
 public record TmdbResultsRaw(
     [property: JsonPropertyName("results")]
-    List<TmdbFilmShortRaw>? Results);
+    List<TmdbFilmShortRaw>? Results);   
 
 public record TmdbFilmShortRaw(
     [property: JsonPropertyName("id")]           int            Id,
@@ -13,6 +13,7 @@ public record TmdbFilmShortRaw(
     [property: JsonPropertyName("release_date")] string?        ReleaseDate,
     [property: JsonPropertyName("poster_path")]  string?        PosterPath,
     [property: JsonPropertyName("vote_average")] double?        VoteAverage,
+    [property: JsonPropertyName("vote_count")]   int            VoteCount,
     [property: JsonPropertyName("genre_ids")]    List<int>?     GenreIds);
 
 public class TmdbFilmDetailsRaw

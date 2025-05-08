@@ -1,14 +1,14 @@
 using System.Text.Json;
-using server.External.Tmdb.Models;
 using server.Services.IServices;
 using server.Shared.DTOs;
+using Raw = server.External.Tmdb.Models;
 
 namespace server.Services;
 
 public class TmdbService : ITmdbService
 {
-    private readonly HttpClient              _httpClient;
-    private readonly ILogger<TmdbService>    _logger;
+    private readonly HttpClient           _httpClient;
+    private readonly ILogger<TmdbService> _logger;
     private          Dictionary<int,string>? _genreCache;
 
     public TmdbService(HttpClient httpClient, ILogger<TmdbService> logger)
@@ -17,13 +17,13 @@ public class TmdbService : ITmdbService
         _logger     = logger;
     }
 
+
     private async Task<Dictionary<int,string>> GetGenreDictionaryAsync()
     {
         if (_genreCache is not null) return _genreCache;
 
-        var raw = await _httpClient.GetFromJsonAsync<
-                      server.External.Tmdb.Models.GenreListRaw>
-                      ("genre/movie/list?language=en-US");
+        var raw = await _httpClient.GetFromJsonAsync<Raw.GenreListRaw>(
+                      "genre/movie/list?language=en-US");
 
         _genreCache = raw?.Genres.ToDictionary(g => g.Id, g => g.Name) ?? new();
         return _genreCache;
@@ -35,40 +35,21 @@ public class TmdbService : ITmdbService
         return dict.Select(kv => new GenreDto(kv.Key, kv.Value)).ToList();
     }
 
+
     public async Task<List<FilmDto>> GetFilmsAsync(string endpoint, int page = 1)
     {
-        var raw = await _httpClient.GetFromJsonAsync<
-                      server.External.Tmdb.Models.TmdbResultsRaw>
-                      ($"{endpoint}?language=en-US&page={page}");
+        var raw = await _httpClient.GetFromJsonAsync<Raw.TmdbResultsRaw>(
+                      $"{endpoint}?language=en-US&page={page}");
 
         if (raw?.Results is null || raw.Results.Count == 0)
             return new List<FilmDto>();
 
-        var genres = await GetGenreDictionaryAsync();
-
-        return raw.Results
-                  .Where(r => r != null)
-                  .Select(r => new FilmDto
-                  {
-                      TmdbId      = r.Id,
-                      Title       = r.Title ?? "Untitled",
-                      ReleaseDate = DateTime.TryParse(r.ReleaseDate, out var d) ? d : default,
-                      PosterPath  = r.PosterPath ?? "",
-                      VoteAverage = (decimal?)r.VoteAverage ?? 0m,
-                      Genres      = r.GenreIds is null
-                                    ? ""
-                                    : string.Join(", ",
-                                                  r.GenreIds.Select(id =>
-                                                      genres.TryGetValue(id, out var name)
-                                                          ? name
-                                                          : "Unknown"))
-                  })
-                  .ToList();
+        return await MapRawToDtoAsync(raw.Results);
     }
 
     public async Task<FilmDto> GetFilmDetailsAsync(int id)
     {
-        var raw = await _httpClient.GetFromJsonAsync<TmdbFilmDetailsRaw>(
+        var raw = await _httpClient.GetFromJsonAsync<Raw.TmdbFilmDetailsRaw>(
                       $"movie/{id}?language=en-US&append_to_response=credits")
                   ?? throw new Exception("Details not found");
 
@@ -90,13 +71,50 @@ public class TmdbService : ITmdbService
         };
     }
 
+
     public async Task<string?> GetTrailerKeyAsync(int id)
     {
-        var raw = await _httpClient.GetFromJsonAsync<TmdbVideosRaw>(
+        var raw = await _httpClient.GetFromJsonAsync<Raw.TmdbVideosRaw>(
                       $"movie/{id}/videos?language=en-US");
 
         return raw?.Results
                    .FirstOrDefault(v => v.Type == "Trailer" && v.Site == "YouTube")
                    ?.Key;
+    }
+
+
+    public async Task<List<FilmDto>> SearchFilmsAsync(string query, int page = 1)
+    {
+        var encoded = Uri.EscapeDataString(query);
+
+        var raw = await _httpClient.GetFromJsonAsync<Raw.TmdbResultsRaw>(
+            $"search/movie?query={encoded}&language=en-US&page={page}&include_adult=false");
+
+        var ordered = raw?.Results?
+            .OrderByDescending(r => r.VoteCount);
+
+        return await MapRawToDtoAsync(ordered);
+    }
+
+    public async Task<List<FilmDto>> MapRawToDtoAsync(IEnumerable<Raw.TmdbFilmShortRaw>? raws)
+    {
+        var genres = await GetGenreDictionaryAsync();
+
+        return raws?
+            .Select(r => new FilmDto
+            {
+                TmdbId      = r.Id,
+                Title       = r.Title ?? "Untitled",
+                PosterPath  = r.PosterPath ?? "",
+                ReleaseDate = DateTime.TryParse(r.ReleaseDate, out var d) ? d : default,
+                VoteAverage = (decimal?)r.VoteAverage ?? 0m,
+                Genres      = r.GenreIds is null
+                              ? ""
+                              : string.Join(", ",
+                                  r.GenreIds.Select(id =>
+                                      genres.TryGetValue(id, out var g) ? g : "Unknown"))
+            })
+            .ToList()
+            ?? new();
     }
 }
