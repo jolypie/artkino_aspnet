@@ -8,8 +8,15 @@ export interface Playlist {
   isSystem: boolean;
 }
 
+export interface PlaylistItemDto {
+  id: number;
+  playlistId: number;
+  tmdbFilmId: number;
+  addedAt: string;
+}
+
 const baseQuery = fetchBaseQuery({
-  baseUrl: '/api/playlists',
+  baseUrl: '/api',
   credentials: 'include',
   prepareHeaders: headers => {
     const token = localStorage.getItem('token');
@@ -21,23 +28,28 @@ const baseQuery = fetchBaseQuery({
 export const playlistApi = createApi({
   reducerPath: 'playlistApi',
   baseQuery,
-  tagTypes: ['Playlists', 'PlaylistFilms'],
+  tagTypes: ['Playlists', 'PlaylistFilms', 'PlaylistItems'],
   endpoints: builder => ({
 
     listPlaylists: builder.query<Playlist[], void>({
-        query: () => 'user',
-        providesTags: result =>
-          result
-            ? [
-                ...result.map(p => ({ type: 'Playlists' as const, id: p.id })),
-                { type: 'Playlists', id: 'LIST' }
-              ]
-            : [{ type: 'Playlists', id: 'LIST' }]
-      }),
-      
+      query: () => '/playlists/user',
+      providesTags: result =>
+        result
+          ? [
+              ...result.map(p => ({ type: 'Playlists' as const, id: p.id })),
+              { type: 'Playlists', id: 'LIST' }
+            ]
+          : [{ type: 'Playlists', id: 'LIST' }]
+    }),
+
+    getPlaylistFilms: builder.query<Film[], number>({
+      query: id => `/playlistitems/${id}`,
+      providesTags: (_, __, id) => [{ type: 'PlaylistFilms', id }]
+    }),
+
     createPlaylist: builder.mutation<Playlist, { name: string }>({
       query: ({ name }) => ({
-        url: '',
+        url: '/playlists',
         method: 'POST',
         body: { name }
       }),
@@ -46,25 +58,52 @@ export const playlistApi = createApi({
 
     deletePlaylist: builder.mutation<void, { id: number }>({
       query: ({ id }) => ({
-        url: `/${id}`,
+        url: `/playlists/${id}`,
         method: 'DELETE'
       }),
-      invalidatesTags: (_ , __ , { id }) => [
+      invalidatesTags: (_, __, { id }) => [
         { type: 'Playlists', id },
         { type: 'Playlists', id: 'LIST' }
       ]
     }),
 
-    getPlaylistFilms: builder.query<Film[], number>({
-        query: id => `/${id}`,
-        providesTags: (_, __, id) => [{ type: 'PlaylistFilms', id }]
+    getPlaylistItems: builder.query<PlaylistItemDto[], number>({
+      query: playlistId => `/playlistitems/${playlistId}`,
+      providesTags: ['PlaylistItems']
+    }),
+
+    addFilmToPlaylist: builder.mutation<PlaylistItemDto, { playlistId: number; tmdbFilmId: number }>({
+      query: ({ playlistId, tmdbFilmId }) => ({
+        url: '/playlistitems',
+        method: 'POST',
+        body: { playlistId, tmdbFilmId }
+      }),
+      invalidatesTags: (_, __, { playlistId }) => [
+        { type: 'PlaylistItems' },
+        { type: 'PlaylistFilms', id: playlistId }
+      ]
+    }),
+
+    removeFilmFromPlaylist: builder.mutation<void, { id: number; playlistId: number }>({
+      query: ({ id, playlistId }) => ({
+        url: `/playlistitems/${id}?playlistId=${playlistId}`,
+        method: 'DELETE'
+      }),
+      invalidatesTags: (_, __, { playlistId }) => [
+        { type: 'PlaylistItems' },
+        { type: 'PlaylistFilms', id: playlistId }
+      ]
     })
+
   })
 });
 
 export const {
   useListPlaylistsQuery,
+  useGetPlaylistFilmsQuery,
   useCreatePlaylistMutation,
   useDeletePlaylistMutation,
-  useGetPlaylistFilmsQuery
+  useGetPlaylistItemsQuery,
+  useAddFilmToPlaylistMutation,
+  useRemoveFilmFromPlaylistMutation
 } = playlistApi;

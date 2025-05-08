@@ -9,7 +9,7 @@ $orange: #FF4E00;
   &__overlay {
     position: absolute;
     inset: 0;
-    background: rgba(0,0,0,.65);
+    background: rgba(0, 0, 0, 0.65);
     backdrop-filter: blur(3px);
   }
 
@@ -25,12 +25,98 @@ $orange: #FF4E00;
     padding: 0 1rem;
   }
 
-  &__title  { font-size: 3rem; font-weight: 700; margin: 0 0 1rem; }
+  &__title {
+    font-size: 3rem;
+    font-weight: 700;
+    margin: 0 0 1rem;
+  }
+
   &__rating {
-    display: flex; align-items: center; gap: .4rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
     font-size: 1.4rem;
 
-    svg { color: $orange; }
+    svg {
+      color: $orange;
+    }
   }
-  &__year   { margin-left: .6rem; font-size: 1.2rem; color: #ccc; }
+
+  &__year {
+    margin-left: 0.6rem;
+    font-size: 1.2rem;
+    color: #ccc;
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: center;
+    gap: 0.8rem;
+    margin-top: 1.2rem;
+
+    .action-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      border: none;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 1.6rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.16);
+        transform: translateY(-2px);
+      }
+
+      &.active {
+        background: var(--accent, $orange);
+      }
+    }
+  }
+}
+
+.playlist-modal {
+  margin-top: 2rem;
+  padding: 2rem 2.5rem;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 1rem;
+  backdrop-filter: blur(6px);
+  text-align: center;
+  color: #fff;
+
+  h2 {
+    font-size: 1.4rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .info {
+    font-size: 1.1rem;
+    color: #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .close-btn {
+    margin-top: 1.5rem;
+    padding: 0.4rem 1.2rem;
+    border-radius: 8px;
+    background: #fff;
+    color: #000;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: 0.2s ease;
+
+    &:hover {
+      background: #eee;
+    }
+  }
 }

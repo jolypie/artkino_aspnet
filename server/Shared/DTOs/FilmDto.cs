@@ -22,9 +22,7 @@ public class FilmDto
 
     [MaxLength(255)]
     public string Countries { get; set; } = string.Empty;
-
-    [MaxLength(255)]
-    public string Genres { get; set; } = string.Empty;
+    public List<GenreDto> Genres { get; set; }
 
     [MaxLength(255)]
     public string Director { get; set; } = string.Empty;

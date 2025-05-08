@@ -11,7 +11,6 @@ import './profilePage.scss';
 
 const ProfilePage: React.FC = () => {
   const { user } = useAuth();
-
   const { data: lists = [] } = useListPlaylistsQuery();
   const [create] = useCreatePlaylistMutation();
   const [newName, setNewName] = useState('');
@@ -27,15 +26,11 @@ const ProfilePage: React.FC = () => {
   const system = lists.filter(p => p.isSystem);
   const custom = lists.filter(p => !p.isSystem);
 
+  
   return (
     <div className="profile-page">
       <Navbar />
       <main className="profile-main">
-        <div className="profile-head">
-          <div className="profile-avatar">{user.username[0].toUpperCase()}</div>
-          <h1 className="profile-name">{user.username}</h1>
-        </div>
-
         <section className="profile-section">
           <h2 className="profile-title">My playlists</h2>
           <div className="profile-grid">
@@ -55,18 +50,24 @@ const ProfilePage: React.FC = () => {
                 <PlaylistCard title={p.name} count={p.movieCount} />
               </Link>
             ))}
-            <div className="profile-add">
-              <input
-                placeholder="New playlist"
-                value={newName}
-                onChange={e => setNewName(e.target.value)}
-              />
-              <button onClick={add}>＋</button>
-            </div>
+
+            <article className="pl-card pl-custom">
+              <div className="pl-bg" />
+              <div className="pl-content">
+                <input
+                  placeholder="New playlist"
+                  value={newName}
+                  onChange={e => setNewName(e.target.value)}
+                  className="pl-input"
+                />
+                <button onClick={add} className="pl-button">＋</button>
+              </div>
+            </article>
           </div>
         </section>
       </main>
     </div>
+    
   );
 };
 

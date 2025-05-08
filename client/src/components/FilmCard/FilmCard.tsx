@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import StarBorderOutlinedIcon from '@mui/icons-material/StarBorderOutlined';
 import { orange } from '@mui/material/colors';
@@ -12,14 +11,9 @@ interface FilmCardProps {
 }
 
 const FilmCard: React.FC<FilmCardProps> = ({ movie }) => {
-  const [genres, setGenres] = useState<string>('');
-
-  useEffect(() => {
-    axios
-      .get<FilmType>(`/api/Tmdb/movie_details/${movie.tmdbId}`)
-      .then(r => setGenres(r.data.genres))
-      .catch(console.error);
-  }, [movie.tmdbId]);
+  const genreNames = Array.isArray(movie.genres)
+  ? movie.genres.map(g => g.name).join(', ')
+  : movie.genres || 'No genres';
 
   return (
     <article className="film-card">
@@ -40,12 +34,12 @@ const FilmCard: React.FC<FilmCardProps> = ({ movie }) => {
         <div className="film-card__info">
           <header className="film-card__header">
             <h3 className="film-card__title">{movie.title}</h3>
-            <p className="film-card__genres">{genres || 'No genres available'}</p>
+            <p className="film-card__genres">{genreNames}</p>
           </header>
 
           <footer className="film-card__meta">
             <StarBorderOutlinedIcon sx={{ color: orange[500], fontSize: 20 }} />
-            <span className="film-card__rating">{movie.voteAverage.toFixed(1)}</span>
+            <span className="film-card__rating">{movie.voteAverage?.toFixed(1)}</span>
             <span className="film-card__year">
               {new Date(movie.releaseDate).getFullYear()}
             </span>

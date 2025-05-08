@@ -31,7 +31,7 @@ const FilmInfo: React.FC<Props> = ({ film }) => (
 
       <div className="info__field">
         <span className="info__label">Genres</span>
-        <span>{film.genres}</span>
+        <p>{film.genres.map(g => g.name).join(', ')}</p>
       </div>
 
       <div className="info__field">

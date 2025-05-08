@@ -29,12 +29,18 @@ public class PlaylistItemRepo : IPlaylistItemRepo
 
     public async Task<PlaylistItemResponseDto> CreateAsync(CreatePlaylistItemDto dto)
     {
+        var exists = await _context.PlaylistItems
+            .AnyAsync(p => p.PlaylistId == dto.PlaylistId && p.TmdbFilmId == dto.TmdbFilmId);
+
+        if (exists)
+            throw new Exception("Film already in playlist");
+
         var playlistItem = new PlaylistItem
         {
             PlaylistId = dto.PlaylistId,
             TmdbFilmId = dto.TmdbFilmId
         };
-        
+
         await _context.PlaylistItems.AddAsync(playlistItem);
         await _context.SaveChangesAsync();
 
@@ -44,6 +50,7 @@ public class PlaylistItemRepo : IPlaylistItemRepo
             playlistItem.TmdbFilmId,
             playlistItem.AddedAt);
     }
+
 
     public async Task DeleteAsync(int id, int playlistId)
     {

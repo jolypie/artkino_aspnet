@@ -50,8 +50,8 @@ public class TmdbService : ITmdbService
     public async Task<FilmDto> GetFilmDetailsAsync(int id)
     {
         var raw = await _httpClient.GetFromJsonAsync<Raw.TmdbFilmDetailsRaw>(
-                      $"movie/{id}?language=en-US&append_to_response=credits")
-                  ?? throw new Exception("Details not found");
+                    $"movie/{id}?language=en-US&append_to_response=credits")
+                ?? throw new Exception("Details not found");
 
         var director = raw.Credits.Crew.FirstOrDefault(c => c.Job == "Director")?.Name ?? "";
         var cast     = string.Join(", ", raw.Credits.Cast.Take(5).Select(c => c.Name));
@@ -64,7 +64,9 @@ public class TmdbService : ITmdbService
             PosterPath  = raw.PosterPath ?? "",
             VoteAverage = (decimal?)raw.VoteAverage ?? 0m,
             ReleaseDate = DateTime.TryParse(raw.ReleaseDate, out var d) ? d : default,
-            Genres      = string.Join(", ", raw.Genres.Select(g => g.Name)),
+            Genres      = raw.Genres
+                            .Select(g => new GenreDto(g.Id, g.Name))
+                            .ToList(),
             Countries   = string.Join(", ", raw.Countries.Select(c => c.Name)),
             Director    = director,
             Cast        = cast
@@ -98,7 +100,7 @@ public class TmdbService : ITmdbService
 
     public async Task<List<FilmDto>> MapRawToDtoAsync(IEnumerable<Raw.TmdbFilmShortRaw>? raws)
     {
-        var genres = await GetGenreDictionaryAsync();
+        var genreDict = await GetGenreDictionaryAsync();
 
         return raws?
             .Select(r => new FilmDto
@@ -108,13 +110,19 @@ public class TmdbService : ITmdbService
                 PosterPath  = r.PosterPath ?? "",
                 ReleaseDate = DateTime.TryParse(r.ReleaseDate, out var d) ? d : default,
                 VoteAverage = (decimal?)r.VoteAverage ?? 0m,
-                Genres      = r.GenreIds is null
-                              ? ""
-                              : string.Join(", ",
-                                  r.GenreIds.Select(id =>
-                                      genres.TryGetValue(id, out var g) ? g : "Unknown"))
+                Genres      = r.GenreIds?
+                    .Where(id => genreDict.ContainsKey(id))
+                    .Select(id => new GenreDto(id, genreDict[id]))
+                    .ToList()
+                    ?? new List<GenreDto>(),
+                Countries = "", 
+                Description = "", 
+                Director = "",
+                Cast = ""
             })
             .ToList()
             ?? new();
     }
+
+    
 }
