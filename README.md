@@ -1,5 +1,10 @@
 # ⚙️ Fullstack Template: ASP.NET + React + PostgreSQL + Docker
 
+SRS - https://docs.google.com/document/d/16uBuN116F5NUpqWoOqjNIqz_UXebdqjFEUSJqbP9A4s/edit?tab=t.0#heading=h.5ha4dopakalw
+SDD - https://docs.google.com/document/d/1_pmerr1pl6wSxi8-OMNtT3RaOes6451gpKarGIXC7GA/edit?tab=t.0#heading=h.mdi29yw2pnug
+
+
+
 Minimal template for a fullstack project using modern technologies:
 
 - 🎯 ASP.NET 8 + Entity Framework Core
